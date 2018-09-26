@@ -3,7 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth import get_user_model
 from django.core import signing
 try:
-    from django.core.urls import reverse
+    from django.urls import reverse
 except ImportError:
     from django.core.urlresolvers import reverse  # noqa
 from django.shortcuts import resolve_url
