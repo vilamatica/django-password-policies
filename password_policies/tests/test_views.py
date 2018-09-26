@@ -1,4 +1,7 @@
-from django.core.urlresolvers import reverse
+try:
+    django.core.urlresolvers
+except ImportError:
+    from django.core.urlresolvers import reverse
 
 from password_policies.forms import PasswordPoliciesChangeForm
 from password_policies.models import PasswordHistory
