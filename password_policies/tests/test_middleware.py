@@ -3,7 +3,10 @@ try:
 except ImportError:
     from urlparse import urljoin
 
-from django.core.urlresolvers import reverse
+try:
+    from django.urls import reverse
+except ImportError:
+    from django.core.urlresolvers import reverse
 from django.utils import timezone
 
 from password_policies.conf import settings
