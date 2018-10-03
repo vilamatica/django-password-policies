@@ -165,7 +165,7 @@ or ``MIDDLEWARE`` if using Django 1.10 or higher:
         self.now = timezone.now()
         self.url = reverse('password_change')
         if settings.PASSWORD_DURATION_SECONDS and \
-                request.user.is_authenticated() and \
+                request.user.is_authenticated and \
                 not self._is_excluded_path(request.path):
             self.check = PasswordCheck(request.user)
             self.expiry_datetime = self.check.get_expiry_datetime()
