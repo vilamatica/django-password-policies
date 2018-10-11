@@ -1,4 +1,4 @@
-from django.utils.encoding import force_text
+from django.utils.encoding import force_unicode
 
 from password_policies.forms import PasswordPoliciesForm
 from password_policies.forms import PasswordPoliciesChangeForm
@@ -16,8 +16,7 @@ class PasswordPoliciesFieldTest(BaseTest):
     def test_password_field_1(self):
         self.assertFieldOutput(PasswordPoliciesField,
                                {'Chad+pher9k': 'Chad+pher9k'},
-                               {'EUAdEHI3ES': [
-                                   u'The new password must contain 1 or more symbol.']}
+                               {'EUAdEHI3ES': [u'The new password must contain 1 or more symbol.']}
                                )
 
     def test_password_field_2(self):
@@ -36,7 +35,7 @@ class PasswordPoliciesFieldTest(BaseTest):
         self.assertFieldOutput(PasswordPoliciesField,
                                {'Chad+pher9k': 'Chad+pher9k'},
                                {u'aaaa5+56dddddd': [u'The new password contains consecutive characters. Only 3 consecutive characters are allowed.',
-                                                    u'The new password is not varied enough.']}
+                                u'The new password is not varied enough.']}
                                )
 
     def test_password_field_5(self):
@@ -49,15 +48,13 @@ class PasswordPoliciesFieldTest(BaseTest):
     def test_password_field_6(self):
         self.assertFieldOutput(PasswordPoliciesField,
                                {u'Ch\xc4d+pher9k': u'Ch\xc4d+pher9k'},
-                               {u'\xc1\xc2\xc3\xc4\u0662\xc5\xc6': [
-                                   u'The new password must contain 1 or more symbol.']}
+                               {u'\xc1\xc2\xc3\xc4\u0662\xc5\xc6': [u'The new password must contain 1 or more symbol.']}
                                )
 
     def test_password_field_7(self):
         self.assertFieldOutput(PasswordPoliciesField,
                                {u'Ch\xc4d+pher9k': u'Ch\xc4d+pher9k'},
-                               {u'\xc1\xc2\xc3\xc4\u0662\xc5\u20ac': [
-                                   u'Ensure this value has at least 8 characters (it has 7).']},
+                               {u'\xc1\xc2\xc3\xc4\u0662\xc5\u20ac': [u'Ensure this value has at least 8 characters (it has 7).']},
                                field_kwargs={'min_length': 8})
 
     def test_password_field_8(self):
@@ -84,7 +81,7 @@ class PasswordPoliciesFormTest(BaseTest):
         form = PasswordPoliciesForm(self.user, data)
         self.assertFalse(form.is_valid())
         self.assertEqual(form["new_password1"].errors,
-                         [force_text(form.error_messages['password_used'])])
+                         [force_unicode(form.error_messages['password_used'])])
 
     def test_password_mismatch(self):
         data = {'new_password1': 'Chah+pher9k',
@@ -92,7 +89,7 @@ class PasswordPoliciesFormTest(BaseTest):
         form = PasswordPoliciesForm(self.user, data)
         self.assertFalse(form.is_valid())
         self.assertEqual(form["new_password2"].errors,
-                         [force_text(form.error_messages['password_mismatch'])])
+                         [force_unicode(form.error_messages['password_mismatch'])])
 
     def test_password_verification_unicode(self):
         password = u'\xc1\u20ac\xc3\xc4\u0662\xc5\xc6\xc7'
@@ -122,7 +119,7 @@ class PasswordPoliciesChangeFormTest(BaseTest):
         form = PasswordPoliciesChangeForm(self.user, data)
         self.assertFalse(form.is_valid())
         self.assertEqual(form["old_password"].errors,
-                         [force_text(form.error_messages['password_incorrect'])])
+                         [force_unicode(form.error_messages['password_incorrect'])])
         self.assertFalse(form.is_valid())
 
     def test_success(self):
@@ -146,7 +143,7 @@ class PasswordResetFormTest(BaseTest):
         form = PasswordResetForm(data)
         self.assertFalse(form.is_valid())
         self.assertEqual(form["email"].errors,
-                         [force_text(form.error_messages['unusable'])])
+                         [force_unicode(form.error_messages['unusable'])])
         self.assertFalse(form.is_valid())
 
     def test_success(self):

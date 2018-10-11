@@ -1,7 +1,12 @@
 from setuptools import setup, find_packages
 
 
-install_requires = ['django>=1.7', 'django-easysettings']
+install_requires=['django>=1.5', 'django-easysettings', 'pytz']
+
+try:
+    import importlib
+except ImportError:
+    install_requires.append('importlib')
 
 setup(
     name='django-password-policies',
@@ -24,16 +29,11 @@ and a mechanism to force password changes.
         'Intended Audience :: Developers',
         'Operating System :: OS Independent',
         'Programming Language :: Python',
-        'Programming Language :: Python :: 2',
-        'Programming Language :: Python :: 2.7',
-        'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.3',
-        'Programming Language :: Python :: 3.4',
         'Framework :: Django',
         'License :: OSI Approved :: BSD License',
         'Topic :: Software Development :: Libraries :: Python Modules',
         'Topic :: Utilities'
     ],
     install_requires=install_requires,
-    test_suite='tests.runtests',
+    test_suite='tests.main',
 )

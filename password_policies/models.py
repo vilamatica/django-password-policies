@@ -19,8 +19,7 @@ Has the following fields:
                                 verbose_name=_('user'),
                                 help_text=_('The user who needs to change '
                                             'his/her password.'),
-                                related_name='password_change_required',
-                                on_delete=models.CASCADE)
+                                related_name='password_change_required')
 
     class Meta:
         get_latest_by = 'created'
@@ -44,8 +43,7 @@ Has the following fields:
     user = models.ForeignKey(settings.AUTH_USER_MODEL, verbose_name=_('user'),
                              help_text=_('The user this password history '
                                          'entry belongs to.'),
-                             related_name='password_history_entries',
-                             on_delete=models.CASCADE)
+                             related_name='password_history_entries')
 
     objects = PasswordHistoryManager()
 

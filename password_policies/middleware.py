@@ -1,24 +1,17 @@
+# from datetime import datetime
 import re
 from datetime import timedelta
-try:
-    from django.urls import resolve, reverse, NoReverseMatch, \
-    Resolver404
-except ImportError:
-    from django.core.urlresolvers import resolve, reverse, NoReverseMatch, \
+from django.core.urlresolvers import resolve, reverse, NoReverseMatch, \
     Resolver404
 from django.http import HttpResponseRedirect
 from django.utils import timezone
-try:
-    from django.utils.deprecation import MiddlewareMixin
-except ImportError:
-    MiddlewareMixin = object
 
 from password_policies.conf import settings
 from password_policies.models import PasswordChangeRequired, PasswordHistory
 from password_policies.utils import PasswordCheck
 
 
-class PasswordChangeMiddleware(MiddlewareMixin):
+class PasswordChangeMiddleware(object):
     """
 A middleware to force a password change.
 
@@ -41,19 +34,7 @@ To use this middleware you need to add it to the
         'django.middleware.csrf.CsrfViewMiddleware',
         'django.contrib.auth.middleware.AuthenticationMiddleware',
         'password_policies.middleware.PasswordChangeMiddleware',
-        # ... other middleware ...
-    )
-
-
-or ``MIDDLEWARE`` if using Django 1.10 or higher:
-
-    MIDDLEWARE = (
-        'django.middleware.common.CommonMiddleware',
-        'django.contrib.sessions.middleware.SessionMiddleware',
-        'django.middleware.csrf.CsrfViewMiddleware',
-        'django.contrib.auth.middleware.AuthenticationMiddleware',
-        'password_policies.middleware.PasswordChangeMiddleware',
-        # ... other middleware ...
+        # ... other middlewares ...
     )
 
 .. note::
@@ -111,13 +92,9 @@ or ``MIDDLEWARE`` if using Django 1.10 or higher:
                     pass
             if settings.PASSWORD_USE_HISTORY:
                 self._check_history(request)
-        else:
-            # In the case where PASSWORD_CHECK_ONLY_AT_LOGIN is true, the required key is not removed,
-            # therefore causing a never ending password update loop
-            request.session[self.required] = False
 
     def _is_excluded_path(self, actual_path):
-        paths = settings.PASSWORD_CHANGE_MIDDLEWARE_EXCLUDED_PATHS[:]
+        paths = settings.PASSWORD_CHANGE_MIDDLEWARE_EXCLUDED_PATHS
         path = r'^%s$' % self.url
         paths.append(path)
         media_url = settings.MEDIA_URL
@@ -134,8 +111,7 @@ or ``MIDDLEWARE`` if using Django 1.10 or higher:
             else:
                 paths.append(r'^%s$' % logout_url)
             try:
-                logout_url = u'/admin/logout/'
-                resolve(logout_url)
+                logout_url = resolve(u'/admin/logout/')
             except Resolver404:
                 pass
             else:
@@ -159,13 +135,13 @@ or ``MIDDLEWARE`` if using Django 1.10 or higher:
         if request.method != 'GET':
             return
         try:
-            resolve(request.path_info)
+            resolve(request.path)
         except Resolver404:
             return
         self.now = timezone.now()
         self.url = reverse('password_change')
         if settings.PASSWORD_DURATION_SECONDS and \
-                request.user.is_authenticated and \
+                request.user.is_authenticated() and \
                 not self._is_excluded_path(request.path):
             self.check = PasswordCheck(request.user)
             self.expiry_datetime = self.check.get_expiry_datetime()
