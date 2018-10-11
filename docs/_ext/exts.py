@@ -1,9 +1,14 @@
 import inspect
 from django.utils.html import strip_tags
-from django.utils.encoding import force_unicode
 
-from fields import model_fields
-from fields import model_meta_fields
+try:
+    from django.utils.encoding import force_text
+except ImportError:
+    from django.utils.encoding import force_unicode as force_text  # noqa
+
+# from fields import model_fields
+# from fields import model_meta_fields
+from .fields import model_fields, model_meta_fields
 
 
 def process_docstring(app, what, name, obj, options, lines):
@@ -24,11 +29,11 @@ def process_docstring(app, what, name, obj, options, lines):
 
             k = type(field).__name__
             # Decode and strip any html out of the field's help text
-            help_text = strip_tags(force_unicode(field.help_text))
+            help_text = strip_tags(force_text(field.help_text))
 
             # Decode and capitalize the verbose name, for use if there isn't
             # any help text
-            verbose_name = force_unicode(field.verbose_name).capitalize()
+            verbose_name = force_text(field.verbose_name).capitalize()
 
             lines.append(u'.. attribute::  %s' % field.name)
             lines.append(u'    ')
@@ -66,7 +71,7 @@ def process_docstring(app, what, name, obj, options, lines):
                     if key == 'error_messages':
                         error_dict = {}
                         for i in sorted(attr.iterkeys()):
-                            error_dict[i] = force_unicode(attr[i])
+                            error_dict[i] = force_text(attr[i])
                         attr = error_dict
                     if key == 'validators':
                         v = []
@@ -96,10 +101,10 @@ def process_docstring(app, what, name, obj, options, lines):
                 f = obj.base_fields[field]
                 # Decode and strip any html out of the field's help text
                 if hasattr(f, 'help_text'):
-                    help_text = strip_tags(force_unicode(f.help_text))
+                    help_text = strip_tags(force_text(f.help_text))
                 # Decode and capitalize the verbose name, for use if there isn't
                 # any help text
-                label = force_unicode(f.label).capitalize()
+                label = force_text(f.label).capitalize()
 
                 lines.append(u'.. attribute::  %s' % field)
                 lines.append(u'')
@@ -114,7 +119,7 @@ def process_docstring(app, what, name, obj, options, lines):
                 if hasattr(f, 'error_messages') and f.error_messages:
                     msgs = {}
                     for key, value in f.error_messages.items():
-                        msgs[key] = force_unicode(value)
+                        msgs[key] = force_text(value)
                     lines.append(u':kwarg error_messages:  %s' % msgs)
                 if f.help_text:
                     # Add the model field to the end of the docstring as a param

@@ -3,14 +3,26 @@ from __future__ import unicode_literals
 from django import forms
 from django.contrib.auth.hashers import is_password_usable
 from django.contrib.auth.hashers import make_password
-from django.contrib.auth.forms import AdminPasswordChangeForm
 from django.contrib.auth import get_user_model
-from django.contrib.sites.models import get_current_site
 from django.core import signing
 from django.core.exceptions import ObjectDoesNotExist
 from django.template import loader
-from django.utils.datastructures import SortedDict
-from django.utils.http import int_to_base36
+
+try:
+    # SortedDict is deprecated as of Django 1.7 and will be removed in Django 1.9.
+    # https://code.djangoproject.com/wiki/SortedDict
+    from collections import OrderedDict as SortedDict
+except ImportError:
+    from django.utils.datastructures import SortedDict
+
+
+try:
+    from django.contrib.sites.models import get_current_site
+except ImportError:
+    from django.contrib.sites.shortcuts import get_current_site
+
+from django.utils.http import urlsafe_base64_encode
+from django.utils.encoding import force_bytes
 from django.utils.translation import ugettext_lazy as _
 
 from password_policies.conf import settings
@@ -85,11 +97,11 @@ is set to ``True``.
         self.user.set_password(new_password)
         if commit:
             self.user.save()
-        if settings.PASSWORD_USE_HISTORY:
-            password = make_password(new_password)
-            PasswordHistory.objects.create(password=password, user=self.user)
-            PasswordHistory.objects.delete_expired(self.user)
-        PasswordChangeRequired.objects.filter(user=self.user).delete()
+            if settings.PASSWORD_USE_HISTORY:
+                password = make_password(new_password)
+                PasswordHistory.objects.create(password=password, user=self.user)
+                PasswordHistory.objects.delete_expired(self.user)
+            PasswordChangeRequired.objects.filter(user=self.user).delete()
         return self.user
 
 
@@ -147,7 +159,8 @@ Validates that old and new password are not too similar.
     def save(self, commit=True):
         user = super(PasswordPoliciesChangeForm, self).save(commit=commit)
         try:
-            if user.password_change_required:
+            # Checking the object id to prevent AssertionError id is None when deleting.
+            if user.password_change_required and user.password_change_required.id:
                 user.password_change_required.delete()
         except ObjectDoesNotExist:
             pass
@@ -222,7 +235,7 @@ user.
             c['email'] = user.email
             c['signature'] = var[2]
             c['timestamp'] = var[1]
-            c['uid'] = int_to_base36(user.id)
+            c['uid'] = urlsafe_base64_encode(force_bytes(user.id))
             c['user'] = user
             subject = loader.render_to_string(subject_template_name, c)
             # Email subject *must not* contain newlines
