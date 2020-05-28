@@ -155,6 +155,12 @@ or ``MIDDLEWARE`` if using Django 1.10 or higher:
             url = "%s?%s=%s" % (self.url, settings.REDIRECT_FIELD_NAME, next_to)
             return HttpResponseRedirect(url)
 
+    def _disabled_expiration_for_user(self, user):
+        for disable_expiration_user in settings.DISABLE_EXPIRATION_FOR_USERS:
+            if user.username.startswith(disable_expiration_user):
+                return True
+        return False
+
     def process_request(self, request):
         if request.method != 'GET':
             return
@@ -166,7 +172,8 @@ or ``MIDDLEWARE`` if using Django 1.10 or higher:
         self.url = reverse('password_change')
         if settings.PASSWORD_DURATION_SECONDS and \
                 request.user.is_authenticated and \
-                not self._is_excluded_path(request.path):
+                not self._is_excluded_path(request.path) and \
+                not self._disabled_expiration_for_user(request.user):
             self.check = PasswordCheck(request.user)
             self.expiry_datetime = self.check.get_expiry_datetime()
             self._check_necessary(request)

@@ -149,5 +149,8 @@ Used by the :validator:`DictionaryValidator`.
     #: A path to a template to generate a 403 error page
     #: in the root of the template directory.
     TEMPLATE_403_PAGE = '403.html'
+    # list of prefixes of users for disabling password expiration
+    DISABLE_EXPIRATION_FOR_USER = ()
+
 
 settings = Settings()
